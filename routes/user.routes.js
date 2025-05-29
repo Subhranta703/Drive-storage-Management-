@@ -40,5 +40,40 @@ router.post('/register' ,
     res.json(newUser)
  })
 
+router.get('./login',(req,res) => {
+    res.render('login');
+})
+
+router.post(
+    '/login',
+    body('email').trim().isEmail().withMessage('Please enter a valid email'),
+    body('password').trim().notEmpty().withMessage('Password is required'),
+
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                errors: errors.array(),
+                message: 'Invalid data',
+            });
+        }
+
+        const { username, password } = req.body;
+
+        const user = await userModel.findOne({ 
+            username:username
+         });
+        if (!user) {
+            return res.status(404).json({ message: 'User and password  not found' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        res.json({ message: 'Login successful', user });
+    }
+);
 
 module.exports = router; 
