@@ -1,52 +1,53 @@
 const express = require('express');
-
 const router = express.Router();
-const { body , validationResult } = require('express-validator');
+const { body, validationResult } = require('express-validator');
 const userModel = require('../models/user.model');
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
-
-router.get('/register' ,(req,res)=>{
+// Render register page
+router.get('/register', (req, res) => {
     res.render('register');
-})
-router.post('/register' , 
-    
+});
+
+// Handle registration
+router.post(
+    '/register',
     body('email').trim().isEmail().isLength({ min: 13 }),
-    body('password').trim().isLength({ min:5 }),
-    body('username').trim().isLength({ min:3 }),
+    body('password').trim().isLength({ min: 5 }),
+    body('username').trim().isLength({ min: 3 }),
 
-    async (req,res)=>{
-    
-    const errors = validationResult(req);
-        console.log(errors);
-
-        if(!errors.isEmpty()){
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
             return res.status(400).json({
-                errors:errors.array(),
-                message:'Invalid Data',
-            })
+                errors: errors.array(),
+                message: 'Invalid Data',
+            });
         }
-    // console.log(req.body);
-    const { email , username , password } = req.body;
-    const hashPassword = await bcrypt.hash(password,10)
 
+        const { email, username, password } = req.body;
+        const hashPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await  userModel.create({
-        email,
-        user:username,
-        password:hashPassword
-     })
+        const newUser = await userModel.create({
+            email,
+            user: username,
+            password: hashPassword,
+        });
 
-    res.json(newUser)
- })
+        res.json({ message: 'User registered', user: newUser });
+    }
+);
 
-router.get('./login',(req,res) => {
+// Render login page
+router.get('/login', (req, res) => {
     res.render('login');
-})
+});
 
+// Handle login using username
 router.post(
     '/login',
-    body('email').trim().isEmail().withMessage('Please enter a valid email'),
+    body('username').trim().notEmpty().withMessage('Username is required'),
     body('password').trim().notEmpty().withMessage('Password is required'),
 
     async (req, res) => {
@@ -60,11 +61,9 @@ router.post(
 
         const { username, password } = req.body;
 
-        const user = await userModel.findOne({ 
-            username:username
-         });
+        const user = await userModel.findOne({ user: username });
         if (!user) {
-            return res.status(404).json({ message: 'User and password  not found' });
+            return res.status(404).json({ message: 'User not found' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
@@ -72,8 +71,19 @@ router.post(
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        res.json({ message: 'Login successful', user });
+        const token = jwt.sign(
+            {
+                userId: user._id,
+                email: user.email,
+                username: user.user,
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: '1d' }
+        );
+
+        res.cookie('token', token);
+        res.send('Logged In');
     }
 );
 
-module.exports = router; 
+module.exports = router;

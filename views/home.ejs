@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>User Drive</title>
+</head>
+
+<body class="bg-gray-100">
+    <main class="min-h-screen p-8">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-700">Welcome to Your Drive</h1>
+            <button onclick="showPopUp()"
+                class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded shadow">
+                + Upload File
+            </button>
+        </div>
+
+        <!-- Uploaded Files Section -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <% if (files.length === 0) { %>
+                <p class="text-gray-500">No files uploaded yet.</p>
+            <% } else { %>
+                <% files.forEach(file => { %>
+                    <div class="bg-white p-4 rounded shadow">
+                        <% if (file.url.endsWith('.jpg') || file.url.endsWith('.jpeg') || file.url.endsWith('.png') || file.url.endsWith('.gif')) { %>
+                            <img src="<%= file.url %>" alt="Uploaded Image" class="w-full h-48 object-cover rounded mb-2" />
+                        <% } else { %>
+                            <div class="h-48 flex items-center justify-center bg-gray-200 rounded mb-2">
+                                <i class="ri-file-line text-4xl text-gray-500"></i>
+                            </div>
+                        <% } %>
+                        <p class="font-medium"><%= file.fileName %></p>
+                        <a href="<%= file.url %>" download
+                            class="text-blue-500 hover:underline text-sm mt-1 inline-block">Download</a>
+                    </div>
+                <% }) %>
+            <% } %>
+        </div>
+
+        <!-- Upload Modal -->
+        <div class="pop hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white p-6 rounded-lg w-full max-w-md relative">
+                <button class="absolute top-2 right-3 text-gray-500 text-xl" onclick="hidePopUp()">
+                    <i class="ri-close-line"></i>
+                </button>
+                <form action="/upload-file" method="post" enctype="multipart/form-data">
+                    <label for="dropzone-file"
+                        class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
+                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                            <svg class="w-8 h-8 mb-4 text-gray-500" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12v9m0 0l-3-3m3 3l3-3M12 3v9" />
+                            </svg>
+                            <p class="mb-2 text-sm text-gray-500 font-semibold">Click to upload or drag and drop</p>
+                            <p class="text-xs text-gray-400">JPG, PNG, GIF up to 800x400px</p>
+                        </div>
+                        <input id="dropzone-file" type="file" class="hidden" name="file" onchange="previewFile()" />
+                    </label>
+                    <!-- Preview -->
+                    <div id="file-preview" class="mt-4 text-center hidden">
+                        <img id="preview-image" class="max-h-40 mx-auto rounded" />
+                        <p id="preview-name" class="text-sm mt-2 text-gray-600"></p>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full mt-4 bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-600 transition">
+                        Upload File
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function showPopUp() {
+            document.querySelector('.pop').style.display = 'flex';
+        }
+        function hidePopUp() {
+            document.querySelector('.pop').style.display = 'none';
+            document.getElementById('file-preview').style.display = 'none';
+        }
+        function previewFile() {
+            const input = document.getElementById('dropzone-file');
+            const preview = document.getElementById('file-preview');
+            const image = document.getElementById('preview-image');
+            const fileName = document.getElementById('preview-name');
+
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    if (file.type.startsWith('image/')) {
+                        image.src = reader.result;
+                        image.style.display = 'block';
+                    } else {
+                        image.style.display = 'none';
+                    }
+                    fileName.textContent = file.name;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+
+</html>
