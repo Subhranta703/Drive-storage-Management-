@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8" />
@@ -8,12 +8,25 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <title>User Drive</title>
+    <style>
+        /* Hover effect for images */
+        .image-card img {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .image-card:hover img {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
 
-<body class="bg-gray-100">
+<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300 text-gray-800 dark:text-gray-100">
     <main class="min-h-screen p-8">
         <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-700">Welcome to Your Drive</h1>
+            <h1 class="text-3xl font-bold text-gray-700 dark:text-gray-200">Welcome to Your Drive</h1>
+
+            <!-- Upload Button -->
             <button onclick="showPopUp()"
                 class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded shadow">
                 + Upload File
@@ -21,22 +34,40 @@
         </div>
 
         <!-- Uploaded Files Section -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="uploaded-files">
             <% if (files.length === 0) { %>
-                <p class="text-gray-500">No files uploaded yet.</p>
+                <p class="text-gray-500 dark:text-gray-400">No files uploaded yet.</p>
             <% } else { %>
                 <% files.forEach(file => { %>
-                    <div class="bg-white p-4 rounded shadow">
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded shadow image-card">
                         <% if (file.url.endsWith('.jpg') || file.url.endsWith('.jpeg') || file.url.endsWith('.png') || file.url.endsWith('.gif')) { %>
                             <img src="<%= file.url %>" alt="Uploaded Image" class="w-full h-48 object-cover rounded mb-2" />
                         <% } else { %>
-                            <div class="h-48 flex items-center justify-center bg-gray-200 rounded mb-2">
-                                <i class="ri-file-line text-4xl text-gray-500"></i>
+                            <div class="h-48 flex items-center justify-center bg-gray-200 dark:bg-gray-700 rounded mb-2">
+                                <i class="ri-file-line text-4xl text-gray-500 dark:text-gray-400"></i>
                             </div>
                         <% } %>
-                        <p class="font-medium"><%= file.fileName %></p>
+                        <p class="font-medium text-gray-700 dark:text-gray-200">
+                            <%= file.fileName %>
+                        </p>
+
+                        <!-- Download Button -->
                         <a href="<%= file.url %>" download
-                            class="text-blue-500 hover:underline text-sm mt-1 inline-block">Download</a>
+                            class="text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                            Download
+                        </a>
+
+                        <!-- Share Button -->
+                        <button onclick="shareFile('<%= file.url %>')"
+                            class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                            Share
+                        </button>
+
+                        <!-- Delete Button -->
+                        <button onclick="deleteFile('<%= file.url %>')"
+                            class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
+                            Delete
+                        </button>
                     </div>
                 <% }) %>
             <% } %>
@@ -44,28 +75,30 @@
 
         <!-- Upload Modal -->
         <div class="pop hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white p-6 rounded-lg w-full max-w-md relative">
-                <button class="absolute top-2 right-3 text-gray-500 text-xl" onclick="hidePopUp()">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md relative">
+                <button class="absolute top-2 right-3 text-gray-500 text-xl dark:text-gray-300" onclick="hidePopUp()">
                     <i class="ri-close-line"></i>
                 </button>
                 <form action="/upload-file" method="post" enctype="multipart/form-data">
                     <label for="dropzone-file"
-                        class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
+                        class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition">
                         <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                            <svg class="w-8 h-8 mb-4 text-gray-500" fill="none" stroke="currentColor"
+                            <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-300" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12v9m0 0l-3-3m3 3l3-3M12 3v9" />
                             </svg>
-                            <p class="mb-2 text-sm text-gray-500 font-semibold">Click to upload or drag and drop</p>
-                            <p class="text-xs text-gray-400">JPG, PNG, GIF up to 800x400px</p>
+                            <p class="mb-2 text-sm text-gray-500 dark:text-gray-300 font-semibold">Click to upload or
+                                drag and drop</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-300">JPG, PNG, GIF up to 800x400px</p>
                         </div>
                         <input id="dropzone-file" type="file" class="hidden" name="file" onchange="previewFile()" />
                     </label>
+
                     <!-- Preview -->
                     <div id="file-preview" class="mt-4 text-center hidden">
                         <img id="preview-image" class="max-h-40 mx-auto rounded" />
-                        <p id="preview-name" class="text-sm mt-2 text-gray-600"></p>
+                        <p id="preview-name" class="text-sm mt-2 text-gray-600 dark:text-gray-300"></p>
                     </div>
 
                     <button type="submit"
@@ -77,20 +110,46 @@
         </div>
     </main>
 
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-900 rounded-lg shadow-sm m-4 transition-colors duration-300">
+        <div class="w-full max-w-screen-xl mx-auto p-4 md:py-8">
+            <div class="sm:flex sm:items-center sm:justify-between">
+                <a href="https://github.com/Subhranta703"
+                    class="flex items-center mb-4 sm:mb-0 space-x-3 rtl:space-x-reverse">
+                    <img src="https://flowbite.com/docs/images/logo.svg" class="h-8" alt="Flowbite Logo" />
+                    <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">FSM</span>
+                </a>
+                <ul
+                    class="flex flex-wrap items-center mb-6 text-sm font-medium text-gray-500 sm:mb-0 dark:text-gray-400">
+                    <li><a href="#" class="hover:underline me-4 md:me-6">About</a></li>
+                    <li><a href="#" class="hover:underline me-4 md:me-6">Privacy Policy</a></li>
+                    <li><a href="#" class="hover:underline me-4 md:me-6">Licensing</a></li>
+                    <li><a href="#" class="hover:underline">Contact</a></li>
+                </ul>
+            </div>
+            <hr class="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
+            <span class="block text-sm text-gray-500 sm:text-center dark:text-gray-400">© 2023 <a
+                    href="https://github.com/Subhranta703" class="hover:underline">Subhranta</a>. All Rights
+                Reserved.</span>
+        </div>
+    </footer>
+
+    <!-- Script: Modal & Preview -->
     <script>
         function showPopUp() {
             document.querySelector('.pop').style.display = 'flex';
         }
+
         function hidePopUp() {
             document.querySelector('.pop').style.display = 'none';
             document.getElementById('file-preview').style.display = 'none';
         }
+
         function previewFile() {
             const input = document.getElementById('dropzone-file');
             const preview = document.getElementById('file-preview');
             const image = document.getElementById('preview-image');
             const fileName = document.getElementById('preview-name');
-
             const file = input.files[0];
             if (file) {
                 const reader = new FileReader();
@@ -107,6 +166,54 @@
                 reader.readAsDataURL(file);
             }
         }
+
+        // Delete File Function
+        function deleteFile(fileUrl) {
+            if (confirm('Are you sure you want to delete this file?')) {
+                fetch('/delete-file', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: fileUrl })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('File deleted successfully!');
+                        document.getElementById('uploaded-files').innerHTML = data.newFilesHtml;
+                    } else {
+                        alert('Failed to delete file');
+                    }
+                });
+            }
+        }
+
+        // Share File Function
+        function shareFile(fileUrl) {
+            const shareLink = `${window.location.origin}${fileUrl}`;
+            prompt('Share this link:', shareLink);
+        }
+    </script>
+
+    <!-- Script: Dark Mode Toggle -->
+    <script>
+        const toggle = document.getElementById('mode-toggle');
+
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+            toggle.checked = true;
+        }
+
+        toggle.addEventListener('change', () => {
+            if (toggle.checked) {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            }
+        });
     </script>
 </body>
 
